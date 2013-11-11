@@ -1,4 +1,7 @@
-
+/*Integrantes:Claudio Acuña
+Ricardo Soto
+Jose Acuña.
+*/
 #include <stdio.h>
 
 #include <string.h>
