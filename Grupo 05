@@ -1,0 +1,61 @@
+ #include <iostream>
+ #include "libpq-fe.h"  //Libreria de conexion -> Linkear donde se encuentran instaladas antes de importar(include)
+
+ #include <stdio.h>
+
+ using namespace std;
+
+ int main(int argc, const char * argv[])
+ {
+
+     PGconn *conn;
+     PGresult *res;
+     int i,j;
+     int c=0;
+
+     conn = PQsetdbLogin("146.83.181.4","6432",NULL,NULL,"iswdb","isw","isw");// Esta funcion contiene la conexion con los parametros Ingresar(NombreHost,Puerto,NULL,NULL,NombreBasedatos,Usuario,Contraseña)
+
+
+    //consulta para saber el promedio de aprobacion de cada profesor
+     if (PQstatus(conn) != CONNECTION_BAD)    //Verifica la conexion con la Base datos
+     {
+         res = PQexec(conn, "SELECT  AVG(A.nota) as \"notaprofe_aprobacion\", C.docente_id  from asignaturas_cursadas A,cursos C where  A.nota>=4.0 and C.curso_id=A.curso_id Group by C.docente_id"); //funcion que contiene la conexion y consulta a la BD
+
+         if (res != NULL && PGRES_TUPLES_OK == PQresultStatus(res))  //PQresultStatus() retornaa el resultado de la consulta
+         {
+             for (i = PQntuples(res)-1; i >= 0; i--)
+             {
+                 for (j = PQnfields(res)-1; j >= 0; j--)
+                     cout<<PQgetvalue(res,i,j)<<endl;
+                 c++;
+
+                 printf("\n");
+             }
+             PQclear(res);
+         }
+
+         //consulta para saber el promedio de reprobacion de cada profesor
+         res = PQexec(conn, "SELECT  AVG(A.nota) as \"notaprofe_reprobacion\", C.docente_id  from asignaturas_cursadas A,cursos C where  A.nota<4.0 and C.curso_id=A.curso_id Group by C.docente_id"); //funcion que contiene la conexion y consulta a la BD
+
+         if (res != NULL && PGRES_TUPLES_OK == PQresultStatus(res))  //PQresultStatus() retornaa el resultado de la consulta
+         {
+             for (i = PQntuples(res)-1; i >= 0; i--)
+             {
+                 for (j = PQnfields(res)-1; j >= 0; j--)
+                     cout<<PQgetvalue(res,i,j)<<endl;
+                 c++;
+
+                 printf("\n");
+             }
+             PQclear(res);
+         }
+     }
+     else
+     {
+        cout<<"Fallo la coneccion"<<endl;
+        return 0;
+     }
+
+     PQfinish(conn);
+     return 0;
+ }
