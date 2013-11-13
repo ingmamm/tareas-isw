@@ -1,73 +1,158 @@
 /*
  * integrantes: Adrian Gutierrez Gil
- * 				Miguel Marabolí Mendez
- * 				Valery Soto Lastra
+ *                                 Miguel Marabolí Mendez
+ *                                 Valery Soto Lastra
  * */
 
 #include <iostream>
 #include <libpq-fe.h>
+#include <string.h>
+
 
 using namespace std;
 
-
-
+void conexion(const char *sentencia);
+void mostrarAsiganturas();
 
 int main(int argc, char * argv[])
 {
+
+
+	int i;
+	char* asignatura;
+
+	cout<<"\nlas asignaturas disponibles para mostrar su promedio y desviacion estandar son :";
+	mostrarAsiganturas();
+
+
+
+
+	std::string cadena = "SELECT c.asignatura, AVG(A.nota) , STDDEV(A.nota) FROM cursos C INNER JOIN asignaturas_cursadas A ON A.curso_id = C.curso_id WHERE c.asignatura = ";
+	std::string finSentencia = "GROUP BY C.asignatura;";
+	std::string csimpleIncio = " '";
+	std::string csimpleFin = "' ";
+
+	cout <<"\nIngrese el nombre de la asignatura:";
+	cin >> asignatura;
+
+
+	cadena.append((csimpleIncio));
+	cadena.append((asignatura));
+	cadena.append((csimpleFin));
+	cadena.append((finSentencia));
+	const char *completo= cadena.c_str();
+
+	cout<<"\n"<<&completo;
+//	conexion(completo);
+
+
+
+}
+void conexion(const char *sentencia)
+{
+	PGconn *cnn = NULL;
+	PGresult *consulta = NULL;
+	int i;
+
+	cnn = PQsetdbLogin("146.83.181.4","6432",NULL,NULL,"iswdb","isw","isw");// datos de conexion
+
+	if (PQstatus(cnn) != CONNECTION_BAD)
+	{
+
+		consulta = PQexec(cnn, sentencia);
+
+		if (consulta != NULL)
+		{
+			int filas = PQntuples(consulta);
+			int columnas = PQnfields(consulta);
+			cout << "No. Filas:" << filas << endl;
+			cout << "No. Columnas:" << columnas << endl << endl;
+
+
+			for (i=0; i<columnas; i++)
+			{
+				cout << "      " <<PQfname(consulta,i) << "     ";
+			}
+
+			cout << endl<<endl;
+
+			// Aqui se despliegan los valores de cada fila
+
+			for (i=0; i<filas; i++)
+			{
+				for (int j=0; j<columnas; j++)
+				{
+					cout  << "  " <<PQgetvalue(consulta,i,j) << "   ";
+				}
+				cout << endl;
+			}
+		}
+
+		// Ahora nos toca liberar la memoria
+		PQclear(consulta);
+
+	}
+
+	else
+	{
+		cout << "\t\t--------------------------------------" << endl;
+		cout << "\t\t|          Error de Conexion         |" << endl;
+		cout << "\t\t--------------------------------------" << endl << endl;
+
+	}
+
+	PQfinish(cnn);
+}
+
+void mostrarAsiganturas(){
+
 	PGconn *cnn = NULL; //iniciando variables
 	PGresult *result = NULL;
 
 
-    int i;
+	int i;
 
-   cnn = PQsetdbLogin("146.83.181.4","6432",NULL,NULL,"iswdb","isw","isw");// datos de conexion
+	cnn = PQsetdbLogin("146.83.181.4","6432",NULL,NULL,"iswdb","isw","isw");// datos de conexion
 
-    if (PQstatus(cnn) != CONNECTION_BAD) { // si la conexion no falla 
-        cout << "\t\t--------------------------------------" << endl;
-        cout << "\t\t|  Conexion al Servidor Establecida  |" << endl;
-        cout << "\t\t--------------------------------------" << endl << endl;
+	if (PQstatus(cnn) != CONNECTION_BAD) { // si la conexion no falla
 
-        result = PQexec(cnn,
-        		"SELECT c.asignatura, AVG(A.nota) as \"Promedio Notas\", STDDEV(A.nota) "
-        		"as \"Desviacion Estandar\""
-        		" FROM cursos C INNER JOIN asignaturas_cursadas A ON A.curso_id = C.curso_id "
-        		"GROUP BY C.asignatura"); // esta es la consulta sql 
 
-        if (result != NULL) {
-            int filas = PQntuples(result);
-            int columnas = PQnfields(result);
-            cout << "No. Filas:" << filas << endl;
-            cout << "No. Columnas:" << columnas << endl << endl;
+		result = PQexec(cnn,"SELECT asignatura FROM cursos  GROUP BY asignatura"); // esta es la consulta sql que busca todas las asignaturas distintas en la bd
 
-        // Aqui se despliegan los nombres de las columnas
+		if (result != NULL) {
+			int filas = PQntuples(result);
+			int columnas = PQnfields(result);
+			/*cout << "No. Filas:" << filas << endl;
+			cout << "No. Columnas:" << columnas << endl << endl;
 
-            cout << "Los nombres de las columnas son:" << endl << endl;
+			// Aqui se despliegan los nombres de las columnas
 
-            for (i=0; i<columnas; i++) {
-                cout << PQfname(result,i) << "\t\t|\t\t";
-            }
+			cout << "Los nombres de las columnas son:" << endl << endl;*/
 
-            cout << endl;
+			for (i=0; i<columnas; i++) {
+				cout << PQfname(result,i) << "\t\t|\t\t";
+			}
 
-        // Aqui se despliegan los valores de cada fila
+			cout << endl;
 
-            for (i=0; i<filas; i++) {
-                for (int j=0; j<columnas; j++) {
-                    cout  << PQgetvalue(result,i,j) << "\t\t\t";
-                }
-                cout << endl;
-            }
-        }
+			// Aqui se despliegan los valores de cada fila
 
-        // Ahora nos toca liberar la memoria
-        PQclear(result);
+			for (i=0; i<filas; i++) {
+				for (int j=0; j<columnas; j++) {
+					cout  << PQgetvalue(result,i,j) << "\t\t\t";
+				}
+				cout << endl;
+			}
+		}
 
-    } else {
-        cout << "Error de conexion" << endl;
-        return 0;
-    }
+		// Ahora nos toca liberar la memoria
+		PQclear(result);
 
-    PQfinish(cnn);
+	} else {
+		cout << "Error de conexion" << endl;
 
-    return 0;
-}
+	}
+
+	PQfinish(cnn);
+
+};
