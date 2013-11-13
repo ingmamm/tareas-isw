@@ -1,7 +1,7 @@
 /*
  * integrantes: Adrian Gutierrez Gil
- *                                 Miguel Marabolí Mendez
- *                                 Valery Soto Lastra
+ *              Miguel Marabolí Mendez
+ *              Valery Soto Lastra
  * */
 
 #include <iostream>
@@ -19,7 +19,7 @@ int main(int argc, char * argv[])
 
 
 	int i;
-	char* asignatura;
+	std::string asignatura;
 
 	cout<<"\nlas asignaturas disponibles para mostrar su promedio y desviacion estandar son :";
 	mostrarAsiganturas();
@@ -33,17 +33,21 @@ int main(int argc, char * argv[])
 	std::string csimpleFin = "' ";
 
 	cout <<"\nIngrese el nombre de la asignatura:";
-	cin >> asignatura;
+	getline(cin,asignatura); // COMO LOS NOMBRES DE LAS ASIGANTURAS LLEVAN ESPACIO NO SE PUEDE USAR cin 
 
 
 	cadena.append((csimpleIncio));
+//	cout<<"\n"<<cadena;
 	cadena.append((asignatura));
+//	cout<<"\n"<<cadena;
 	cadena.append((csimpleFin));
+//	cout<<"\n"<<cadena;
 	cadena.append((finSentencia));
+//	cout<<"\n"<<cadena;
 	const char *completo= cadena.c_str();
 
-	cout<<"\n"<<&completo;
-//	conexion(completo);
+//	cout<<"\n"<<&completo;
+ 	conexion(completo);
 
 
 
@@ -65,9 +69,10 @@ void conexion(const char *sentencia)
 		{
 			int filas = PQntuples(consulta);
 			int columnas = PQnfields(consulta);
-			cout << "No. Filas:" << filas << endl;
-			cout << "No. Columnas:" << columnas << endl << endl;
+//			cout << "No. Filas:" << filas << endl;
+//			cout << "No. Columnas:" << columnas << endl << endl;
 
+			cout << endl<<endl;
 
 			for (i=0; i<columnas; i++)
 			{
@@ -154,5 +159,7 @@ void mostrarAsiganturas(){
 	}
 
 	PQfinish(cnn);
+
+};
 
 };
